@@ -1,0 +1,47 @@
+git init
+Initialise a new Git repository in the current directory
+
+git status
+Show the state of the working tree and staging area
+
+git add <file>
+Stage a file for the next commit
+
+git add .
+Stage all modified and new files
+
+git commit -m "message"
+Commit staged changes to the repository history
+
+git log
+Show commit history
+
+git log --oneline
+Show condensed commit history
+
+git show <commit>
+Show details and changes of a specific commit
+
+git checkout <branch>
+Switch to another branch
+
+git checkout -b <branch>
+Create and switch to a new branch
+
+git reset HEAD <file>
+Unstage a file (keep working directory changes)
+
+git restore <file>
+Discard changes in the working directory
+
+git merge <branch>
+Merge another branch into the current branch
+
+git branch -v
+List branches and their latest commits
+
+git pull
+Fetch and merge changes from the remote repository
+
+git push
+Send local commits to the remote repository
