@@ -89,3 +89,17 @@ CMakeUserPresets.json
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #cmake-build-*
 
+# Build directories
+build/
+
+# Release folders
+release_*/
+
+# Archives
+*.zip
+
+# Compiled binaries
+*.exe
+*.dll
+*.lib
+*.exp
