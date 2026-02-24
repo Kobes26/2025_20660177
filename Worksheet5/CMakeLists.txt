@@ -17,6 +17,8 @@ add_library(maths adder.cpp)
 # Build calc executable from calc.cpp and link to maths
 add_executable(calc calc.cpp)
 target_link_libraries(calc maths)
+target_compile_definitions(maths PUBLIC maths_STATIC)
+target_compile_definitions(calc  PUBLIC maths_STATIC)
 
 # Install rules for packaging
 install(TARGETS calc maths
