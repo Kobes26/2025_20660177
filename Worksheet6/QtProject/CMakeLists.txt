@@ -11,6 +11,10 @@ qt_add_executable(QtProject
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+    Model/ModelPart.cpp
+    Model/ModelPart.h
+    Model/ModelPartList.cpp
+    Model/ModelPartList.h
 )
 
 target_link_libraries(QtProject
