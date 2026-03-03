@@ -14,10 +14,20 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+signals:
+    void statusUpdateMessage(const QString& message, int timeoutMs);
+
+private slots:
+    void onButton1Released();
+    void onButton2Released();
 
 private:
     Ui::MainWindow *ui;
+
+//    void onButton3Released();
+
 };
 #endif // MAINWINDOW_H
