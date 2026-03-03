@@ -1,11 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include "Model/ModelPart.h"
 #include "Model/ModelPartList.h"
 
-#include <QMessageBox>
+#include <QTreeView>
 #include <QPushButton>
 #include <QStatusBar>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <QModelIndex>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -13,18 +17,17 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //Exercise 5
+
+    // ---------------- Exercise 5: Tree click ----------------
     connect(ui->treeView, &QTreeView::clicked,
             this, &MainWindow::handleTreeClicked);
 
-    // ---------------- Exercise 4: create/allocate the model list ----------------
+    // ---------------- Exercise 4: Model setup ----------------
     this->partList = new ModelPartList("Parts List", this);
 
-    // Link it to the TreeView in the GUI
     ui->treeView->setModel(this->partList);
     ui->treeView->setAnimated(true);
 
-    // Manually create a model tree (worksheet starter example)
     ModelPart* rootItem = this->partList->getRootItem();
 
     // Add 3 top level items
@@ -48,21 +51,22 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->treeView->expandAll();
-    // ---------------------------------------------------------------------------
 
-    // ---------------- Exercise 3: Status bar signal hookup ----------------
+    // ---------------- Exercise 3: Status bar ----------------
     connect(this, &MainWindow::statusUpdateMessage,
             ui->statusbar, &QStatusBar::showMessage);
 
-    // ---------------- Exercise 2: Button connections ----------------
+    // ---------------- Exercise 2: Buttons ----------------
     connect(ui->pushButton,   &QPushButton::released, this, &MainWindow::onButton1Released);
     connect(ui->pushButton_2, &QPushButton::released, this, &MainWindow::onButton2Released);
 }
+
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
+// ---------------- Exercise 2 ----------------
 void MainWindow::onButton1Released()
 {
     emit statusUpdateMessage("Button 1 released -> status bar updated.", 2000);
@@ -73,22 +77,36 @@ void MainWindow::onButton2Released()
     emit statusUpdateMessage("Button 2 released -> status bar updated.", 0);
 }
 
+// ---------------- Exercise 5 ----------------
 void MainWindow::handleTreeClicked()
 {
-    /* Get the index of the selected item */
     QModelIndex index = ui->treeView->currentIndex();
 
-    /* Get a pointer to the item from the index */
+    if (!index.isValid())
+        return;
+
     ModelPart* selectedPart = static_cast<ModelPart*>(index.internalPointer());
 
-    /* Retrieve the name string from the internal QVariant array */
     QString text = selectedPart->data(0).toString();
 
     emit statusUpdateMessage(QString("The selected item is: ") + text, 0);
 }
 
+// ---------------- Exercise 6 ----------------
 void MainWindow::on_actionOpen_File_triggered()
 {
-    emit statusUpdateMessage(QString("Open File action triggered"), 0);
-}
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Open file",
+        QString(),
+        "All Files (*.*)"
+        );
 
+    if (fileName.isEmpty())
+    {
+        emit statusUpdateMessage("Open file cancelled.", 2000);
+        return;
+    }
+
+    emit statusUpdateMessage(QString("Selected file: ") + fileName, 0);
+}

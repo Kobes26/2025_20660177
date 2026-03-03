@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.19)
 project(QtProject LANGUAGES CXX)
 
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
@@ -15,6 +19,10 @@ qt_add_executable(QtProject
     Model/ModelPart.h
     Model/ModelPartList.cpp
     Model/ModelPartList.h
+    icons.qrc
+    optiondialog.h
+    optiondialog.cpp
+    optiondialog.ui
 )
 
 target_link_libraries(QtProject
