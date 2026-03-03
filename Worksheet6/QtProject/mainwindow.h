@@ -28,6 +28,8 @@ private slots:
 
     void handleTreeClicked();   // EX5
 
+    void on_actionOpen_File_triggered();
+
 private:
     Ui::MainWindow *ui;
     ModelPartList* partList;
