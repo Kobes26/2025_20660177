@@ -6,12 +6,16 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStatusBar>
+#include <QModelIndex>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //Exercise 5
+    connect(ui->treeView, &QTreeView::clicked,
+            this, &MainWindow::handleTreeClicked);
 
     // ---------------- Exercise 4: create/allocate the model list ----------------
     this->partList = new ModelPartList("Parts List", this);
@@ -67,4 +71,18 @@ void MainWindow::onButton1Released()
 void MainWindow::onButton2Released()
 {
     emit statusUpdateMessage("Button 2 released -> status bar updated.", 0);
+}
+
+void MainWindow::handleTreeClicked()
+{
+    /* Get the index of the selected item */
+    QModelIndex index = ui->treeView->currentIndex();
+
+    /* Get a pointer to the item from the index */
+    ModelPart* selectedPart = static_cast<ModelPart*>(index.internalPointer());
+
+    /* Retrieve the name string from the internal QVariant array */
+    QString text = selectedPart->data(0).toString();
+
+    emit statusUpdateMessage(QString("The selected item is: ") + text, 0);
 }

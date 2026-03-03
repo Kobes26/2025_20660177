@@ -26,6 +26,8 @@ private slots:
     void onButton1Released();
     void onButton2Released();
 
+    void handleTreeClicked();   // EX5
+
 private:
     Ui::MainWindow *ui;
     ModelPartList* partList;
