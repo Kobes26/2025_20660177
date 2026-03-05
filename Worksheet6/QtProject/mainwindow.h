@@ -4,6 +4,7 @@
 #include "Model/ModelPartList.h"
 #include "Model/ModelPart.h"
 #include <QMainWindow>
+#include <QModelIndex>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,7 +28,8 @@ private slots:
     void onButton2Released();
 
     void handleTreeClicked();   // EX5
-
+//    void handleTreeDoubleClicked(const QModelIndex& index);
+    void on_actionItem_Options_triggered();
     void on_actionOpen_File_triggered();
 
 private:

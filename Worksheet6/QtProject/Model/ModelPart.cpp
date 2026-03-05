@@ -95,47 +95,60 @@ int ModelPart::row() const {
     return 0;
 }
 
-void ModelPart::setColour(const unsigned char R, const unsigned char G, const unsigned char B) {
+/*void ModelPart::setColour(const unsigned char R, const unsigned char G, const unsigned char B) {
     /* This is a placeholder function that you will need to modify if you want to use it */
     
-    /* As the name suggests ... */
+    /* As the name suggests ...
 }
 
 unsigned char ModelPart::getColourR() {
     /* This is a placeholder function that you will need to modify if you want to use it */
     
-    /* As the name suggests ... */
+    /* As the name suggests ...
     return 0;   // needs updating
 }
 
 unsigned char ModelPart::getColourG() {
     /* This is a placeholder function that you will need to modify if you want to use it */
     
-    /* As the name suggests ... */
+    /* As the name suggests ...
     return 0;   // needs updating
 }
 
 
 unsigned char ModelPart::getColourB() {
    /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
+
+    /* As the name suggests ...
     return 0;   // needs updating
-}
+}*/
 
 
-void ModelPart::setVisible(bool isVisible) {
-    /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
+void ModelPart::setVisible(bool v) {
+    isVisible = v;
+
+    // keep column 1 in sync with the boolean (nice for the tree’s 2nd column)
+    if(m_itemData.size() > 1)
+        m_itemData[1] = v ? QString("true") : QString("false");
 }
 
 bool ModelPart::visible() {
     /* This is a placeholder function that you will need to modify if you want to use it */
     
     /* As the name suggests ... */
-    return false;
+    return isVisible;
 }
+
+void ModelPart::setColour(const unsigned char R, const unsigned char G, const unsigned char B)
+{
+    colourR = R;
+    colourG = G;
+    colourB = B;
+}
+
+unsigned char ModelPart::getColourR() { return colourR; }
+unsigned char ModelPart::getColourG() { return colourG; }
+unsigned char ModelPart::getColourB() { return colourB; }
 
 void ModelPart::loadSTL( QString fileName ) {
     /* This is a placeholder function that you will need to modify if you want to use it */

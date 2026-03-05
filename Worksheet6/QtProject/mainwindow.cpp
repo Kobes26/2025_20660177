@@ -4,6 +4,8 @@
 #include "Model/ModelPart.h"
 #include "Model/ModelPartList.h"
 
+#include "optiondialog.h"
+#include <QTreeView>
 #include <QTreeView>
 #include <QPushButton>
 #include <QStatusBar>
@@ -17,7 +19,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    ui->treeView->addAction(ui->actionItem_Options);
+    // Double-click opens dialog
+    //connect(ui->treeView, &QTreeView::doubleClicked,
+    //        this, &MainWindow::handleTreeDoubleClicked);
     // ---------------- Exercise 5: Tree click ----------------
     connect(ui->treeView, &QTreeView::clicked,
             this, &MainWindow::handleTreeClicked);
@@ -83,12 +88,19 @@ void MainWindow::handleTreeClicked()
     QModelIndex index = ui->treeView->currentIndex();
 
     if (!index.isValid())
+    {
+        emit statusUpdateMessage("No item selected", 0);
         return;
+    }
 
     ModelPart* selectedPart = static_cast<ModelPart*>(index.internalPointer());
+    if (!selectedPart)
+    {
+        emit statusUpdateMessage("Selection invalid", 0);
+        return;
+    }
 
     QString text = selectedPart->data(0).toString();
-
     emit statusUpdateMessage(QString("The selected item is: ") + text, 0);
 }
 
@@ -97,16 +109,77 @@ void MainWindow::on_actionOpen_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(
         this,
-        "Open file",
-        QString(),
-        "All Files (*.*)"
+        tr("Open File"),
+        "",
+        tr("STL Files (*.stl);;All Files (*.*)")
         );
 
     if (fileName.isEmpty())
+        return;
+
+    // Show file path in status bar
+    emit statusUpdateMessage(fileName, 0);
+
+    // Get currently selected tree item
+    QModelIndex index = ui->treeView->currentIndex();
+
+    if (!index.isValid())
     {
-        emit statusUpdateMessage("Open file cancelled.", 2000);
+        emit statusUpdateMessage("No tree item selected", 0);
         return;
     }
 
-    emit statusUpdateMessage(QString("Selected file: ") + fileName, 0);
+    ModelPart* selectedPart =
+        static_cast<ModelPart*>(index.internalPointer());
+
+    if (!selectedPart)
+        return;
+
+    // Extract just the filename (not full path)
+    QFileInfo info(fileName);
+    QString shortName = info.fileName();
+
+    // Update the name column in the tree
+    selectedPart->set(0, shortName);
+
+    // Refresh tree view display
+    partList->dataChanged(index.siblingAtColumn(0),
+                          index.siblingAtColumn(1));
+}
+
+void MainWindow::on_actionItem_Options_triggered()
+{
+    QModelIndex index = ui->treeView->currentIndex();
+    if(!index.isValid())
+    {
+        emit statusUpdateMessage("No tree item selected", 0);
+        return;
+    }
+
+    ModelPart* selectedPart =
+        static_cast<ModelPart*>(index.internalPointer());
+
+    if(!selectedPart)
+    {
+        emit statusUpdateMessage("Selection invalid", 0);
+        return;
+    }
+
+    OptionDialogue dialog(this);
+
+    dialog.setFromModelPart(selectedPart);
+
+    if(dialog.exec() == QDialog::Accepted)
+    {
+        dialog.applyToModelPart(selectedPart);
+
+        // refresh the tree display
+        QModelIndex idx = ui->treeView->currentIndex();
+        partList->dataChanged(idx.siblingAtColumn(0), idx.siblingAtColumn(1));
+        emit statusUpdateMessage("Dialog accepted", 0);
+    }
+    else
+    {
+        emit statusUpdateMessage("Dialog cancelled", 0);
+    }
 }
