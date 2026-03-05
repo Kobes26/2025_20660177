@@ -35,6 +35,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     ModelPartList* partList;
+    vtkSmartPointer<vtkRenderer> renderer;
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow;
 
 //    void onButton3Released();
 

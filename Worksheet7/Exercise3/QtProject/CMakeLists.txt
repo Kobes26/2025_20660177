@@ -7,6 +7,8 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
+find_package(VTK REQUIRED)
+
 qt_standard_project_setup()
 
 qt_add_executable(QtProject
@@ -25,11 +27,7 @@ qt_add_executable(QtProject
     optiondialog.ui
 )
 
-target_link_libraries(QtProject
-    PRIVATE
-        Qt::Core
-        Qt::Widgets
-)
+target_link_libraries(QtProject PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${VTK_LIBRARIES} )
 
 include(GNUInstallDirs)
 
@@ -45,3 +43,7 @@ qt_generate_deploy_app_script(
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
+add_custom_target(VRBindings)
+add_custom_command(TARGET VRBindings PRE_BUILD
+COMMAND ${CMAKE_COMMAND} -E
+	copy_directory ${CMAKE_SOURCE_DIR}/vrbindings ${CMAKE_BINARY_DIR}/)

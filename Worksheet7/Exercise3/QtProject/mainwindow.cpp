@@ -13,6 +13,14 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QModelIndex>
+#include <vtkRenderer.h>
+#include <vtkGenericOpenGLRenderWindow.h>
+#include <vtkCylinderSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
+#include <vtkCamera.h>
+#include <qvtkopenglnativewidget.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
