@@ -5,6 +5,10 @@
 #include "Model/ModelPart.h"
 #include <QMainWindow>
 #include <QModelIndex>
+#include <vtkSmartPointer.h>
+
+class vtkRenderer;
+class vtkGenericOpenGLRenderWindow;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -37,6 +41,8 @@ private:
     ModelPartList* partList;
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow;
+    void updateRender();
+    void updateRenderFromTree(const QModelIndex& index);
 
 //    void onButton3Released();
 

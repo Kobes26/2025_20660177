@@ -21,14 +21,53 @@
 #include <vtkProperty.h>
 #include <vtkCamera.h>
 #include <qvtkopenglnativewidget.h>
+#include <vtkNew.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+//link renderer to qt widget
+    renderWindow = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+    ui->widget->setRenderWindow(renderWindow);
+//add renderer
+    renderer = vtkSmartPointer<vtkRenderer>::New();
+    renderWindow->AddRenderer(renderer);
+
+    renderer->SetBackground(0.1, 0.2, 0.4);
+    //cylinder from before
+/*    vtkNew<vtkCylinderSource> cylinder;
+    cylinder -> SetResolution(8);
+    //mapper
+    vtkNew<vtkPolyDataMapper> cylinderMapper;
+    cylinderMapper->SetInputConnection(cylinder->GetOutputPort());
+    //actor: colour and rotation
+    vtkNew<vtkActor> cylinderActor;
+    cylinderActor->SetMapper(cylinderMapper);
+    cylinderActor->GetProperty()->SetColor(1.,0.,0.35);
+    cylinderActor->RotateX(30.0);
+    cylinderActor->RotateY(-45.0);
+
+    renderer->AddActor(cylinderActor);*/
+
+//    renderWindow = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+//    ui->widget->setRenderWindow(renderWindow);
+
+//    renderer = vtkSmartPointer<vtkRenderer>::New();
+//    renderWindow->AddRenderer(renderer);
+
+//reset camera - may need function
+    renderer->ResetCamera();
+    renderer->GetActiveCamera()->Azimuth(30);
+    renderer->GetActiveCamera()->Elevation(30);
+    renderer->ResetCameraClippingRange();
+
+    renderWindow->Render();
+
+    ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
     ui->treeView->addAction(ui->actionItem_Options);
-    // Double-click opens dialog
+    // click opens dialog
     //connect(ui->treeView, &QTreeView::doubleClicked,
     //        this, &MainWindow::handleTreeDoubleClicked);
     // ---------------- Exercise 5: Tree click ----------------
@@ -117,7 +156,7 @@ void MainWindow::on_actionOpen_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(
         this,
-        tr("Open File"),
+        tr("Open STL File"),
         "",
         tr("STL Files (*.stl);;All Files (*.*)")
         );
@@ -125,12 +164,44 @@ void MainWindow::on_actionOpen_File_triggered()
     if (fileName.isEmpty())
         return;
 
-    // Show file path in status bar
-    emit statusUpdateMessage(fileName, 0);
+    QFileInfo info(fileName);
+    QString shortName = info.fileName();
 
-    // Get currently selected tree item
+    ModelPart* newPart = new ModelPart({ shortName, QString("true") });
+
     QModelIndex index = ui->treeView->currentIndex();
 
+    if (index.isValid())
+    {
+        ModelPart* selectedPart =
+            static_cast<ModelPart*>(index.internalPointer());
+
+        if (selectedPart)
+        {
+            selectedPart->appendChild(newPart);
+        }
+        else
+        {
+            partList->getRootItem()->appendChild(newPart);
+        }
+    }
+    else
+    {
+        partList->getRootItem()->appendChild(newPart);
+    }
+
+    newPart->loadSTL(fileName);
+
+    ui->treeView->expandAll();
+
+    updateRender();
+
+    emit statusUpdateMessage(QString("Loaded STL: ") + shortName, 0);
+}
+
+void MainWindow::on_actionItem_Options_triggered()
+{
+    QModelIndex index = ui->treeView->currentIndex();
     if (!index.isValid())
     {
         emit statusUpdateMessage("No tree item selected", 0);
@@ -141,33 +212,6 @@ void MainWindow::on_actionOpen_File_triggered()
         static_cast<ModelPart*>(index.internalPointer());
 
     if (!selectedPart)
-        return;
-
-    // Extract just the filename (not full path)
-    QFileInfo info(fileName);
-    QString shortName = info.fileName();
-
-    // Update the name column in the tree
-    selectedPart->set(0, shortName);
-
-    // Refresh tree view display
-    partList->dataChanged(index.siblingAtColumn(0),
-                          index.siblingAtColumn(1));
-}
-
-void MainWindow::on_actionItem_Options_triggered()
-{
-    QModelIndex index = ui->treeView->currentIndex();
-    if(!index.isValid())
-    {
-        emit statusUpdateMessage("No tree item selected", 0);
-        return;
-    }
-
-    ModelPart* selectedPart =
-        static_cast<ModelPart*>(index.internalPointer());
-
-    if(!selectedPart)
     {
         emit statusUpdateMessage("Selection invalid", 0);
         return;
@@ -177,17 +221,61 @@ void MainWindow::on_actionItem_Options_triggered()
 
     dialog.setFromModelPart(selectedPart);
 
-    if(dialog.exec() == QDialog::Accepted)
+    if (dialog.exec() == QDialog::Accepted)
     {
         dialog.applyToModelPart(selectedPart);
 
-        // refresh the tree display
         QModelIndex idx = ui->treeView->currentIndex();
         partList->dataChanged(idx.siblingAtColumn(0), idx.siblingAtColumn(1));
+
+        updateRender();
+
         emit statusUpdateMessage("Dialog accepted", 0);
     }
     else
     {
         emit statusUpdateMessage("Dialog cancelled", 0);
+    }
+}
+void MainWindow::updateRender()
+{
+    renderer->RemoveAllViewProps();
+
+    int rows = partList->rowCount(QModelIndex());
+    for (int i = 0; i < rows; ++i)
+    {
+        updateRenderFromTree(partList->index(i, 0, QModelIndex()));
+    }
+
+    renderer->ResetCamera();
+    renderer->ResetCameraClippingRange();
+    renderWindow->Render();
+}
+void MainWindow::updateRenderFromTree(const QModelIndex& index)
+{
+    if (index.isValid())
+    {
+        ModelPart* selectedPart =
+            static_cast<ModelPart*>(index.internalPointer());
+
+        if (selectedPart)
+        {
+            vtkSmartPointer<vtkActor> actor = selectedPart->getActor();
+            if (actor)
+            {
+                renderer->AddActor(actor);
+            }
+        }
+    }
+
+    if (!partList->hasChildren(index) || (index.flags() & Qt::ItemNeverHasChildren))
+    {
+        return;
+    }
+
+    int rows = partList->rowCount(index);
+    for (int i = 0; i < rows; ++i)
+    {
+        updateRenderFromTree(partList->index(i, 0, index));
     }
 }
